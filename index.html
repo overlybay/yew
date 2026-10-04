@@ -87,7 +87,7 @@
 <section id="free-audit">
   <div class="sec-kicker">Free — no card required</div>
   <h2 class="sec-title">Get your first phone audit free.</h2>
-  <p class="sec-sub">We'll run one AI secret-shopper call on your business and send you the scorecard. If your phones are perfect, you'll know. (They're usually not.)</p>
+  <p class="sec-sub">We'll run one AI secret-shopper call on your business and send you the scorecard. Pick a day — we call during business hours. If your phones are perfect, you'll know. (They're usually not.)</p>
   <div class="form-card">
     <form id="audit-form">
       <div class="field"><label>Business name</label><input required id="f-name" placeholder="ABC Plumbing"></div>
@@ -101,8 +101,9 @@
         </select>
       </div>
       <div class="field"><label>Email for your scorecard</label><input required id="f-email" type="email" placeholder="you@business.com"></div>
-      <button class="btn" type="submit" style="width:100%">Run my free audit →</button>
-      <div class="form-note" id="audit-note">Takes about 2 minutes. We'll call during business hours and email your scorecard.</div>
+      <div class="field"><label>Preferred day for your audit call</label><input required id="f-day" type="date"></div>
+      <button class="btn" type="submit" style="width:100%">Schedule my free audit →</button>
+      <div class="form-note" id="audit-note">We call during business hours (9:39 AM–5 PM ET) on your chosen day. No card, no pitch — just the scorecard.</div>
     </form>
   </div>
 </section>
@@ -156,6 +157,7 @@
   <div class="sec-kicker">Contact</div>
   <h2 class="sec-title">Talk to a human.</h2>
   <p class="sec-sub">Questions about YEW for your business — or about investing. We read everything.</p>
+  <p class="sec-sub" style="margin-top:4px">Prefer to talk? <a href="tel:+13059800418" style="color:var(--green);font-weight:700">(305) 980-0418</a> — business hours, 9:39 AM–5 PM ET.</p>
   <div class="grid2">
     <div class="engine-card">
       <div class="e-icon">🏢</div>
@@ -196,6 +198,7 @@
 
 <footer>
   YEW — stop the leak, recover the lost.<br>
+  <a href="tel:+13059800418">(305) 980-0418</a><br>
   <a href="#investors">Investors</a> · <a href="#pricing">Pricing</a> · <a href="#free-audit">Free audit</a> · <a href="#contact">Contact</a><br>
   © 2026 YEW. All rights reserved.
 </footer>
@@ -203,6 +206,13 @@
 <script src="config.js"></script>
 <script src="app.js"></script>
 <script>
+// audit date picker: min today, default tomorrow
+(function () {
+  var d = document.getElementById("f-day");
+  var t = new Date(), tm = new Date(t.getTime() + 86400000);
+  function iso(x) { return x.toISOString().slice(0, 10); }
+  d.min = iso(t); d.value = iso(tm);
+})();
 document.getElementById("audit-form").addEventListener("submit", function (e) {
   e.preventDefault();
   var btn = e.target.querySelector("button");
@@ -217,10 +227,11 @@ document.getElementById("audit-form").addEventListener("submit", function (e) {
   }).select().then(function (r) {
     if (r.error || !r.data || !r.data.length) {
       document.getElementById("audit-note").textContent = "Something went wrong — please try again.";
-      btn.disabled = false; btn.textContent = "Run my free audit →";
+      btn.disabled = false; btn.textContent = "Schedule my free audit →";
       return;
     }
     var b = r.data[0];
+    var day = document.getElementById("f-day").value;
     function saveCode(code, retries) {
       return sb.from("business_codes").insert({ business_id: b.id, code: code }).then(function (r2) {
         if (r2.error && retries > 0) {
@@ -228,17 +239,17 @@ document.getElementById("audit-form").addEventListener("submit", function (e) {
         }
         if (r2.error) {
           document.getElementById("audit-note").textContent = "Something went wrong — please try again.";
-          btn.disabled = false; btn.textContent = "Run my free audit →";
+          btn.disabled = false; btn.textContent = "Schedule my free audit →";
           return;
         }
-        return sb.from("audits").insert({ business_id: b.id, status: "scheduled" }).then(function (r3) {
+        return sb.from("audits").insert({ business_id: b.id, status: "scheduled", scheduled_for: day }).then(function (r3) {
           if (r3.error) {
             document.getElementById("audit-note").textContent = "Something went wrong — please try again.";
-            btn.disabled = false; btn.textContent = "Run my free audit →";
+            btn.disabled = false; btn.textContent = "Schedule my free audit →";
             return;
           }
           document.getElementById("audit-note").innerHTML =
-            "You're in! Your free audit is scheduled. Your dashboard access code is <b style='color:var(--green)'>" +
+            "You're in! Your audit is scheduled for <b style='color:var(--green)'>" + day + "</b>. Your dashboard access code is <b style='color:var(--green)'>" +
             code + "</b> — save it, you'll need it to view your scorecard at <a href='app.html' style='color:var(--green)'>the dashboard</a>.";
           btn.textContent = "Audit scheduled ✓";
         });
