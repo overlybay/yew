@@ -67,6 +67,18 @@ create table if not exists messages (
   created_at timestamptz default now()
 );
 
+-- Contact form submissions (businesses + investors)
+create table if not exists contact_messages (
+  id uuid primary key default gen_random_uuid(),
+  kind text not null,        -- 'business' | 'investor'
+  name text,
+  email text not null,
+  company text,
+  message text,
+  read boolean default false,
+  created_at timestamptz default now()
+);
+
 -- Public read not needed; app uses anon key with RLS. For v1, businesses manage
 -- their own rows via a simple magic code. Service role used by webhooks/cron.
 alter table businesses enable row level security;
@@ -96,3 +108,6 @@ drop policy if exists "v1 all messages" on messages;
 create policy "v1 all messages" on messages for all using (true) with check (true);
 drop policy if exists "v1 all codes" on business_codes;
 create policy "v1 all codes" on business_codes for all using (true) with check (true);
+alter table contact_messages enable row level security;
+drop policy if exists "v1 all contact" on contact_messages;
+create policy "v1 all contact" on contact_messages for all using (true) with check (true);

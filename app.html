@@ -30,6 +30,7 @@
     <div class="tab active" data-t="audits" onclick="go('audits')">📞 Audits</div>
     <div class="tab" data-t="revive" onclick="go('revive')">💬 Revive</div>
     <div class="tab" data-t="inbox" onclick="go('inbox')">📥 Inbox <span id="inbox-badge"></span></div>
+    <div class="tab" data-t="billing" onclick="go('billing')">💳 Billing</div>
   </div>
   <div id="panel"></div>
 </div>
@@ -74,7 +75,20 @@ function statusPill(s) {
 function render() {
   if (TAB === "audits") return renderAudits();
   if (TAB === "revive") return renderRevive();
+  if (TAB === "billing") return renderBilling();
   return renderInbox();
+}
+
+function renderBilling() {
+  var planNames = { trial: "Free trial", audit: "YEW Audit — $49/mo", revive: "YEW Revive — $79/mo", complete: "YEW Complete — $99/mo" };
+  var html = '<div class="panel"><h3>Billing</h3>' +
+    '<div class="kpi-row">' + kpi("Current plan", planNames[BIZ.plan] || BIZ.plan, "") + "</div>" +
+    '<p style="color:var(--mut);font-size:15px;line-height:1.7">Pay your monthly subscription with Zelle — no fees, no card needed:</p>' +
+    '<div class="scorecard" style="margin-top:14px"><div class="sc-row"><span class="k">Zelle to (email)</span><span style="color:var(--green);font-weight:700">skyywalkaa42@gmail.com</span></div>' +
+    '<div class="sc-row"><span class="k">Recipient name</span><span>Deonta Giles</span></div></div>' +
+    '<p style="color:var(--mut);font-size:14px;margin-top:14px;line-height:1.6">Send your plan amount each month. Put your business name in the Zelle memo so we credit the right account. Questions? Use the Contact section on our homepage.</p>' +
+    "</div>";
+  document.getElementById("panel").innerHTML = html;
 }
 
 function renderAudits() {

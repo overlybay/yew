@@ -17,6 +17,7 @@
       <a href="#how">How it works</a>
       <a href="#pricing">Pricing</a>
       <a href="#investors">Investors</a>
+      <a href="#contact">Contact</a>
       <a class="btn" href="#free-audit" style="padding:9px 18px;font-size:13px">Free audit</a>
     </div>
   </nav>
@@ -131,6 +132,7 @@
     </div>
   </div>
   <p class="sec-sub" style="margin-top:18px;text-align:center">Prefer performance? <b style="color:var(--txt)">$25 per booked appointment</b> — you only pay when Revive puts a job on your calendar.</p>
+  <p class="sec-sub" style="margin-top:8px;text-align:center;font-size:15px">Pay by Zelle — no fees, no card required. Payment details are in your dashboard after signup.</p>
 </section>
 
 <section id="investors">
@@ -150,6 +152,36 @@
   </div>
 </section>
 
+<section id="contact">
+  <div class="sec-kicker">Contact</div>
+  <h2 class="sec-title">Talk to a human.</h2>
+  <p class="sec-sub">Questions about YEW for your business — or about investing. We read everything.</p>
+  <div class="grid2">
+    <div class="engine-card">
+      <div class="e-icon">🏢</div>
+      <h3>For businesses</h3>
+      <form id="contact-biz">
+        <div class="field"><label>Your name</label><input required id="cb-name" placeholder="Jane Smith"></div>
+        <div class="field"><label>Email</label><input required id="cb-email" type="email" placeholder="you@business.com"></div>
+        <div class="field"><label>Message</label><textarea required id="cb-msg" rows="3" placeholder="Tell us about your business…"></textarea></div>
+        <button class="btn" type="submit" style="width:100%">Send →</button>
+        <div class="form-note" id="cb-note"></div>
+      </form>
+    </div>
+    <div class="engine-card">
+      <div class="e-icon">💼</div>
+      <h3>For investors</h3>
+      <form id="contact-inv">
+        <div class="field"><label>Your name</label><input required id="ci-name" placeholder="Alex Investor"></div>
+        <div class="field"><label>Email</label><input required id="ci-email" type="email" placeholder="you@fund.com"></div>
+        <div class="field"><label>Message</label><textarea required id="ci-msg" rows="3" placeholder="Thesis, check size, timeline…"></textarea></div>
+        <button class="btn" type="submit" style="width:100%">Send →</button>
+        <div class="form-note" id="ci-note"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
 <section class="faq">
   <div class="sec-kicker">FAQ</div>
   <h2 class="sec-title">Quick answers.</h2>
@@ -164,7 +196,7 @@
 
 <footer>
   YEW — stop the leak, recover the lost.<br>
-  <a href="#investors">Investors</a> · <a href="#pricing">Pricing</a> · <a href="#free-audit">Free audit</a><br>
+  <a href="#investors">Investors</a> · <a href="#pricing">Pricing</a> · <a href="#free-audit">Free audit</a> · <a href="#contact">Contact</a><br>
   © 2026 YEW. All rights reserved.
 </footer>
 
@@ -214,6 +246,33 @@ document.getElementById("audit-form").addEventListener("submit", function (e) {
     }
     return saveCode(code, 2);
   });
+});
+
+function sendContact(kind, nameId, emailId, msgId, noteId, btn) {
+  var note = document.getElementById(noteId);
+  btn.disabled = true; btn.textContent = "Sending…";
+  sb.from("contact_messages").insert({
+    kind: kind,
+    name: document.getElementById(nameId).value,
+    email: document.getElementById(emailId).value,
+    message: document.getElementById(msgId).value
+  }).then(function (r) {
+    if (r.error) {
+      note.textContent = "Couldn't send — please try again in a moment.";
+      btn.disabled = false; btn.textContent = "Send →";
+      return;
+    }
+    note.innerHTML = "<b style='color:var(--green)'>Message sent.</b> We'll get back to you shortly.";
+    btn.textContent = "Sent ✓";
+  });
+}
+document.getElementById("contact-biz").addEventListener("submit", function (e) {
+  e.preventDefault();
+  sendContact("business", "cb-name", "cb-email", "cb-msg", "cb-note", e.target.querySelector("button"));
+});
+document.getElementById("contact-inv").addEventListener("submit", function (e) {
+  e.preventDefault();
+  sendContact("investor", "ci-name", "ci-email", "ci-msg", "ci-note", e.target.querySelector("button"));
 });
 </script>
 </body>
