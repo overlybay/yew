@@ -189,14 +189,30 @@ document.getElementById("audit-form").addEventListener("submit", function (e) {
       return;
     }
     var b = r.data[0];
-    return sb.from("business_codes").insert({ business_id: b.id, code: code }).then(function () {
-      return sb.from("audits").insert({ business_id: b.id, status: "scheduled" }).then(function () {
-        document.getElementById("audit-note").innerHTML =
-          "You're in! Your free audit is scheduled. Your dashboard access code is <b style='color:var(--green)'>" +
-          code + "</b> — save it, you'll need it to view your scorecard at <a href='app.html' style='color:var(--green)'>the dashboard</a>.";
-        btn.textContent = "Audit scheduled ✓";
+    function saveCode(code, retries) {
+      return sb.from("business_codes").insert({ business_id: b.id, code: code }).then(function (r2) {
+        if (r2.error && retries > 0) {
+          return saveCode(Math.random().toString(36).slice(2, 8).toUpperCase(), retries - 1);
+        }
+        if (r2.error) {
+          document.getElementById("audit-note").textContent = "Something went wrong — please try again.";
+          btn.disabled = false; btn.textContent = "Run my free audit →";
+          return;
+        }
+        return sb.from("audits").insert({ business_id: b.id, status: "scheduled" }).then(function (r3) {
+          if (r3.error) {
+            document.getElementById("audit-note").textContent = "Something went wrong — please try again.";
+            btn.disabled = false; btn.textContent = "Run my free audit →";
+            return;
+          }
+          document.getElementById("audit-note").innerHTML =
+            "You're in! Your free audit is scheduled. Your dashboard access code is <b style='color:var(--green)'>" +
+            code + "</b> — save it, you'll need it to view your scorecard at <a href='app.html' style='color:var(--green)'>the dashboard</a>.";
+          btn.textContent = "Audit scheduled ✓";
+        });
       });
-    });
+    }
+    return saveCode(code, 2);
   });
 });
 </script>

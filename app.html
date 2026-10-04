@@ -110,18 +110,17 @@ function renderAudits() {
 function kpi(k, v, cls) { return '<div class="kpi"><div class="k">' + k + '</div><div class="v ' + cls + '">' + v + "</div></div>"; }
 
 function renderRevive() {
-  Promise.all([
-    sb.from("campaigns").select("*").eq("business_id", BIZ.id).order("created_at", { ascending: false }),
-    sb.from("leads").select("id,status,quote_amount,campaign_id").then(function (r) {
-      // join manually
-      return sb.from("campaigns").select("id").eq("business_id", BIZ.id).then(function (c) {
-        var ids = (c.data || []).map(function (x) { return x.id; });
-        if (!ids.length) return { data: [] };
-        return sb.from("leads").select("*").in("campaign_id", ids);
-      });
-    })
-  ]).then(function (res) {
-    var camps = res[0].data || [], leads = res[1].data || [];
+  sb.from("campaigns").select("*").eq("business_id", BIZ.id).order("created_at", { ascending: false }).then(function (c) {
+    var camps = (c.data || []);
+    var ids = camps.map(function (x) { return x.id; });
+    var leadsP = ids.length
+      ? sb.from("leads").select("*").in("campaign_id", ids)
+      : Promise.resolve({ data: [] });
+    return leadsP.then(function (l) { renderReviveBody(camps, l.data || []); });
+  });
+}
+
+function renderReviveBody(camps, leads) {
     var revived = leads.filter(function (l) { return l.status === "replied" || l.status === "booked"; }).length;
     var booked = leads.filter(function (l) { return l.status === "booked"; }).length;
     var pipe = leads.filter(function (l) { return l.status === "booked"; })
@@ -153,7 +152,6 @@ function renderRevive() {
     }
     html += "</div><div id='leads-sub'></div>";
     document.getElementById("panel").innerHTML = html;
-  });
 }
 
 function parseCSV(text) {
@@ -161,8 +159,15 @@ function parseCSV(text) {
   var out = [];
   for (var i = 1; i < lines.length; i++) {
     var cols = lines[i].split(",").map(function (c) { return c.trim().replace(/^"|"$/g, ""); });
-    if (cols[1]) out.push({ name: cols[0] || null, phone: cols[1], service: cols[2] || null,
-      quote_date: cols[3] || null, quote_amount: cols[4] ? parseFloat(cols[4]) : null });
+    if (!cols[1]) continue;
+    var qd = cols[3] || null;
+    if (qd && !/^\d{4}-\d{2}-\d{2}$/.test(qd)) {
+      var d = new Date(qd);
+      qd = isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+    }
+    var qa = cols[4] ? parseFloat(String(cols[4]).replace(/[$,]/g, "")) : null;
+    out.push({ name: cols[0] || null, phone: cols[1], service: cols[2] || null,
+      quote_date: qd, quote_amount: isNaN(qa) ? null : qa });
   }
   return out;
 }
@@ -181,9 +186,17 @@ function launchCampaign() {
       msg_day4: document.getElementById("c-m2").value,
       msg_day10: document.getElementById("c-m3").value
     }).select().then(function (r) {
+      if (r.error || !r.data || !r.data.length) {
+        alert("Couldn't create the campaign — please try again.");
+        return;
+      }
       var camp = r.data[0];
       var rows = leads.map(function (l) { l.campaign_id = camp.id; return l; });
-      return sb.from("leads").insert(rows).then(function () {
+      return sb.from("leads").insert(rows).then(function (r2) {
+        if (r2.error) {
+          alert("Campaign created, but the leads didn't save (" + r2.error.message + "). Please try the upload again.");
+          return;
+        }
         alert(leads.length + " leads loaded — first texts go out within the hour, then day 4 and day 10 follow-ups run automatically.");
         render();
       });
