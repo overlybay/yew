@@ -184,13 +184,8 @@ function launchCampaign() {
       var camp = r.data[0];
       var rows = leads.map(function (l) { l.campaign_id = camp.id; return l; });
       return sb.from("leads").insert(rows).then(function () {
-        // kick off first messages via the API
-        return fetch("/api/revive-kickoff", { method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ campaign_id: camp.id }) }).then(function () {
-          alert(leads.length + " leads loaded — first texts going out now.");
-          render();
-        });
+        alert(leads.length + " leads loaded — first texts go out within the hour, then day 4 and day 10 follow-ups run automatically.");
+        render();
       });
     });
   };
