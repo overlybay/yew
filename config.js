@@ -1,0 +1,3 @@
+/* YEW config */
+const SUPABASE_URL = "https://vktilxxruwinimtbxgoc.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrdGlseHhydXdpbmltdGJ4Z29jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNzQxNzYsImV4cCI6MjEwNjY1MDE3Nn0.vzFSJjjrcd9RA6e4K1kL_PX_-QNC06xm5zHwEHOaDV8";

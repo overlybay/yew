@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>YEW — We mystery-shop your phones & resurrect your dead leads</title>
+<meta name="description" content="YEW is the AI customer-recovery platform for local businesses: weekly AI secret-shopper phone audits plus AI SMS campaigns that bring dead leads back to life.">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="nav">
+    <a class="logo" href="index.html">YEW<span>.</span></a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#investors">Investors</a>
+      <a class="btn" href="#free-audit" style="padding:9px 18px;font-size:13px">Free audit</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>Your phones are losing you money.<br><em>YEW finds it.</em></h1>
+    <p>YEW is the AI customer-recovery platform for local businesses. We mystery-shop your phones every week with an AI secret shopper — then we text your dead leads back to life. Two engines, one dashboard, money you were leaving on the table.</p>
+    <div class="hero-cta">
+      <a class="btn" href="#free-audit">Get my free phone audit</a>
+      <a class="btn btn-ghost" href="#how">See how it works</a>
+    </div>
+
+    <div class="scorecard">
+      <div class="sc-head">
+        <div class="sc-title">Sample YEW phone audit — ABC Plumbing</div>
+        <div class="score-ring">58</div>
+      </div>
+      <div class="sc-row"><span class="k">Call answered</span><span class="v-bad">No — rang 45s, voicemail</span></div>
+      <div class="sc-row"><span class="k">Time to answer</span><span class="v-bad">Never picked up</span></div>
+      <div class="sc-row"><span class="k">Voicemail greeting</span><span class="v-bad">Generic carrier message</span></div>
+      <div class="sc-row"><span class="k">Callback offered</span><span class="v-bad">None</span></div>
+      <div class="sc-row"><span class="k">Est. revenue at risk / month</span><span class="v-bad">$6,400</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+<section id="how">
+  <div class="sec-kicker">Two engines</div>
+  <h2 class="sec-title">Stop the leak. Recover the lost.</h2>
+  <p class="sec-sub">Most local businesses lose customers in two places: the phone call that never gets answered, and the old quote that never gets followed up. YEW fixes both, automatically.</p>
+  <div class="grid2">
+    <div class="engine-card">
+      <div class="e-icon">📞</div>
+      <h3>YEW Audit — the AI secret shopper</h3>
+      <p>Every week, our AI calls your business posing as a real customer and grades the experience:</p>
+      <ul>
+        <li>Did anyone answer — and how fast?</li>
+        <li>Was the greeting professional?</li>
+        <li>How long were "customers" put on hold?</li>
+        <li>Voicemail quality and callback offered?</li>
+      </ul>
+      <p>You get a scorecard, the call recording, and a dollar estimate of what's at risk — every single week.</p>
+    </div>
+    <div class="engine-card">
+      <div class="e-icon">💬</div>
+      <h3>YEW Revive — dead leads, back to life</h3>
+      <p>Upload your spreadsheet of old quotes and cold leads. YEW texts them a friendly, personal follow-up sequence:</p>
+      <ul>
+        <li>Day 0 — "Still thinking about that project?"</li>
+        <li>Day 4 — helpful nudge with an easy reply</li>
+        <li>Day 10 — last-call offer to re-engage</li>
+      </ul>
+      <p>Replies land in your inbox. You book the job. Customers typically see 5–15% of dead leads re-engage.</p>
+    </div>
+  </div>
+
+  <div class="sec-kicker" style="margin-top:44px">How it works</div>
+  <h2 class="sec-title">Live in an afternoon.</h2>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><h4>Tell us your number</h4><p>Enter your business phone below. That's the entire setup for the audit engine.</p></div>
+    <div class="step"><div class="n">2</div><h4>We mystery-shop you weekly</h4><p>Our AI calls as a customer, scores everything, and drops a report card in your dashboard.</p></div>
+    <div class="step"><div class="n">3</div><h4>Upload dead leads</h4><p>Drop in a CSV of old quotes. YEW texts them back to life and routes replies to you.</p></div>
+  </div>
+</section>
+
+<section id="free-audit">
+  <div class="sec-kicker">Free — no card required</div>
+  <h2 class="sec-title">Get your first phone audit free.</h2>
+  <p class="sec-sub">We'll run one AI secret-shopper call on your business and send you the scorecard. If your phones are perfect, you'll know. (They're usually not.)</p>
+  <div class="form-card">
+    <form id="audit-form">
+      <div class="field"><label>Business name</label><input required id="f-name" placeholder="ABC Plumbing"></div>
+      <div class="field"><label>Business phone (the one customers call)</label><input required id="f-phone" type="tel" placeholder="+1 (404) 555-0132"></div>
+      <div class="field"><label>What kind of business?</label>
+        <select id="f-cat">
+          <option>Plumber / HVAC / Electrician</option><option>Roofer / Contractor</option>
+          <option>Dental / Medical office</option><option>Salon / Barbershop</option>
+          <option>Auto repair</option><option>Restaurant</option><option>Other local business</option>
+          <option>Freelancer / Solo operator</option>
+        </select>
+      </div>
+      <div class="field"><label>Email for your scorecard</label><input required id="f-email" type="email" placeholder="you@business.com"></div>
+      <button class="btn" type="submit" style="width:100%">Run my free audit →</button>
+      <div class="form-note" id="audit-note">Takes about 2 minutes. We'll call during business hours and email your scorecard.</div>
+    </form>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="sec-kicker">Pricing</div>
+  <h2 class="sec-title">Pays for itself with one saved customer.</h2>
+  <div class="price-grid">
+    <div class="price-card">
+      <h3>YEW Audit</h3>
+      <div class="p-price">$49<small>/mo</small></div>
+      <ul><li>Weekly AI secret-shopper calls</li><li>Scorecard + recordings</li><li>Lost-revenue estimates</li><li>Trend tracking</li></ul>
+      <a class="btn btn-ghost" href="#free-audit">Start free</a>
+    </div>
+    <div class="price-card hot">
+      <div class="p-tag">MOST POPULAR</div>
+      <h3>YEW Complete</h3>
+      <div class="p-price">$99<small>/mo</small></div>
+      <ul><li>Everything in Audit</li><li>Dead-lead SMS revival (500/mo)</li><li>Reply inbox + booking alerts</li><li>Monthly recovery report</li></ul>
+      <a class="btn" href="#free-audit">Start free</a>
+    </div>
+    <div class="price-card">
+      <h3>YEW Revive</h3>
+      <div class="p-price">$79<small>/mo</small></div>
+      <ul><li>Dead-lead SMS drip (500/mo)</li><li>Smart reply inbox</li><li>Booked-job tracking</li><li>Opt-out handling built in</li></ul>
+      <a class="btn btn-ghost" href="#free-audit">Start free</a>
+    </div>
+  </div>
+  <p class="sec-sub" style="margin-top:18px;text-align:center">Prefer performance? <b style="color:var(--txt)">$25 per booked appointment</b> — you only pay when Revive puts a job on your calendar.</p>
+</section>
+
+<section id="investors">
+  <div class="sec-kicker">For investors</div>
+  <h2 class="sec-title">A new category in a $500B market.</h2>
+  <div class="investor">
+    <div class="inv-grid">
+      <div class="inv-item"><h4>The problem</h4><p>America's 30M+ small businesses lose a staggering share of inbound calls — unanswered, badly handled, never followed up. Meanwhile, dead lead lists worth thousands rot in spreadsheets. Nobody measures it, so nobody fixes it.</p></div>
+      <div class="inv-item"><h4>The product</h4><p>YEW is live: an AI secret shopper that audits phones weekly with scored report cards, plus an AI SMS engine that resurrects dead quotes. Two products, one dashboard, built for the contractors, clinics, and shops the enterprise tools ignore.</p></div>
+      <div class="inv-item"><h4>Why now</h4><p>Voice AI and messaging automation just got cheap enough to serve $49/month customers. The mystery-shopping industry is manual and enterprise-only — AI makes it 100x cheaper and continuous instead of annual.</p></div>
+      <div class="inv-item"><h4>The moat</h4><p>Every audit builds proprietary scoring data per trade; every revival builds playbooks per vertical. Data network effects in a market with no incumbent.</p></div>
+    </div>
+    <div style="margin-top:26px;text-align:center">
+      <p class="sec-sub" style="margin:0 auto 16px">Raising a small angel round to scale sales automation and voice infrastructure.</p>
+      <a class="btn" href="mailto:hello@yew.app?subject=YEW%20—%20investor%20inquiry">Talk to us →</a>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="sec-kicker">FAQ</div>
+  <h2 class="sec-title">Quick answers.</h2>
+  <div style="margin-top:20px">
+    <details><summary>Is the secret shopper legal?</summary><p>Yes. We call publicly listed business numbers during business hours, identify the purpose in follow-up, and record in line with applicable laws. Businesses opt in by signing up.</p></details>
+    <details><summary>Do I need new hardware or phone systems?</summary><p>No. YEW works with the phone number you already have. Nothing to install.</p></details>
+    <details><summary>What about spam laws for the texts?</summary><p>Revive only texts leads who previously contacted your business, includes opt-out on every message, and honors STOP instantly. We guide you through carrier registration.</p></details>
+    <details><summary>I'm a freelancer, not a big company. Does this work for me?</summary><p>Absolutely — solo operators miss more calls than anyone. One recovered client usually covers a year of YEW.</p></details>
+  </div>
+</section>
+</div>
+
+<footer>
+  YEW — stop the leak, recover the lost.<br>
+  <a href="#investors">Investors</a> · <a href="#pricing">Pricing</a> · <a href="#free-audit">Free audit</a><br>
+  © 2026 YEW. All rights reserved.
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+document.getElementById("audit-form").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var btn = e.target.querySelector("button");
+  btn.disabled = true; btn.textContent = "Scheduling your audit…";
+  var code = Math.random().toString(36).slice(2, 8).toUpperCase();
+  sb.from("businesses").insert({
+    name: document.getElementById("f-name").value,
+    phone: document.getElementById("f-phone").value,
+    category: document.getElementById("f-cat").value,
+    owner_email: document.getElementById("f-email").value,
+    plan: "trial"
+  }).select().then(function (r) {
+    if (r.error || !r.data || !r.data.length) {
+      document.getElementById("audit-note").textContent = "Something went wrong — please try again.";
+      btn.disabled = false; btn.textContent = "Run my free audit →";
+      return;
+    }
+    var b = r.data[0];
+    return sb.from("business_codes").insert({ business_id: b.id, code: code }).then(function () {
+      return sb.from("audits").insert({ business_id: b.id, status: "scheduled" }).then(function () {
+        document.getElementById("audit-note").innerHTML =
+          "You're in! Your free audit is scheduled. Your dashboard access code is <b style='color:var(--green)'>" +
+          code + "</b> — save it, you'll need it to view your scorecard at <a href='app.html' style='color:var(--green)'>the dashboard</a>.";
+        btn.textContent = "Audit scheduled ✓";
+      });
+    });
+  });
+});
+</script>
+</body>
+</html>

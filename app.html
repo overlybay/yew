@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>YEW Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="wrap-narrow" id="gate">
+  <div style="text-align:center;padding:60px 0 20px">
+    <a class="logo" href="index.html" style="font-size:32px">YEW<span>.</span></a>
+    <h2 style="margin:18px 0 8px">Business dashboard</h2>
+    <p style="color:var(--mut)">Enter the access code from your signup email.</p>
+  </div>
+  <div class="form-card">
+    <div class="field"><label>Access code</label><input id="code" placeholder="e.g. X7K2P9" style="text-transform:uppercase"></div>
+    <button class="btn" style="width:100%" onclick="enter()">Open dashboard →</button>
+    <div class="form-note" id="gate-note"></div>
+  </div>
+</div>
+
+<div class="wrap" id="dash" style="display:none">
+  <div class="dash-head">
+    <a class="logo" href="index.html">YEW<span>.</span></a>
+    <div style="color:var(--mut);font-size:14px" id="biz-name"></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-t="audits" onclick="go('audits')">📞 Audits</div>
+    <div class="tab" data-t="revive" onclick="go('revive')">💬 Revive</div>
+    <div class="tab" data-t="inbox" onclick="go('inbox')">📥 Inbox <span id="inbox-badge"></span></div>
+  </div>
+  <div id="panel"></div>
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script>
+var BIZ = null, TAB = "audits";
+
+function enter() {
+  var code = document.getElementById("code").value.trim().toUpperCase();
+  if (!code) return;
+  document.getElementById("gate-note").textContent = "Checking…";
+  sb.from("business_codes").select("business_id").eq("code", code).single().then(function (r) {
+    if (!r.data) { document.getElementById("gate-note").textContent = "Code not found — check your email."; return; }
+    return sb.from("businesses").select("*").eq("id", r.data.business_id).single();
+  }).then(function (r) {
+    if (!r || !r.data) return;
+    BIZ = r.data;
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("dash").style.display = "block";
+    document.getElementById("biz-name").textContent = BIZ.name + " · " + BIZ.plan + " plan";
+    render();
+  });
+}
+
+function go(t) {
+  TAB = t;
+  document.querySelectorAll(".tab").forEach(function (x) { x.classList.toggle("active", x.dataset.t === t); });
+  render();
+}
+
+function pill(txt, cls) { return '<span class="pill ' + cls + '">' + esc(txt) + "</span>"; }
+function statusPill(s) {
+  var m = { scheduled: "blue", calling: "amber", completed: "green", failed: "red",
+            pending: "blue", sent_1: "amber", sent_2: "amber", sent_3: "amber",
+            replied: "green", booked: "green", dead: "red", opted_out: "red",
+            draft: "blue", active: "green", paused: "amber", done: "green" };
+  return pill(s.replace(/_/g, " "), m[s] || "blue");
+}
+
+function render() {
+  if (TAB === "audits") return renderAudits();
+  if (TAB === "revive") return renderRevive();
+  return renderInbox();
+}
+
+function renderAudits() {
+  sb.from("audits").select("*").eq("business_id", BIZ.id).order("created_at", { ascending: false }).then(function (r) {
+    var rows = r.data || [];
+    var done = rows.filter(function (a) { return a.status === "completed"; });
+    var avg = done.length ? Math.round(done.reduce(function (s, a) { return s + (a.overall_score || 0); }, 0) / done.length) : null;
+    var missed = done.filter(function (a) { return a.answered === false; }).length;
+    var html = '<div class="kpi-row">' +
+      kpi("Audits run", done.length, "") +
+      kpi("Avg score", avg == null ? "—" : avg, avg == null ? "" : (avg >= 75 ? "good" : avg >= 50 ? "warn" : "bad")) +
+      kpi("Calls missed", missed, missed ? "bad" : "good") +
+      kpi("Est. at risk/mo", "$" + (done.reduce(function (s, a) { return s + (parseFloat(a.lost_revenue_estimate) || 0); }, 0) || 0).toLocaleString(), "warn") +
+      "</div>";
+    html += '<div class="panel"><h3>Phone audit history</h3>';
+    if (!rows.length) html += '<div class="empty">No audits yet — your first one is scheduled.<br>New secret-shopper calls run weekly.</div>';
+    else {
+      html += '<table class="data"><tr><th>Date</th><th>Status</th><th>Score</th><th>Answered</th><th>Outcome</th><th></th></tr>';
+      rows.forEach(function (a) {
+        html += "<tr><td>" + esc((a.scheduled_for || "").slice(0, 10)) + "</td><td>" + statusPill(a.status) + "</td>" +
+          "<td><b>" + (a.overall_score == null ? "—" : a.overall_score) + "</b></td>" +
+          "<td>" + (a.answered == null ? "—" : a.answered ? "Yes" : "No") + "</td>" +
+          "<td>" + esc(a.outcome || "—") + "</td>" +
+          "<td>" + (a.recording_url ? '<a href="' + esc(a.recording_url) + '" target="_blank" style="color:var(--green)">▶ listen</a>' : "") + "</td></tr>";
+        if (a.ai_notes) html += '<tr><td colspan="6" style="color:var(--mut);font-size:13px">🤖 ' + esc(a.ai_notes) + "</td></tr>";
+      });
+      html += "</table>";
+    }
+    html += "</div>";
+    document.getElementById("panel").innerHTML = html;
+  });
+}
+function kpi(k, v, cls) { return '<div class="kpi"><div class="k">' + k + '</div><div class="v ' + cls + '">' + v + "</div></div>"; }
+
+function renderRevive() {
+  Promise.all([
+    sb.from("campaigns").select("*").eq("business_id", BIZ.id).order("created_at", { ascending: false }),
+    sb.from("leads").select("id,status,quote_amount,campaign_id").then(function (r) {
+      // join manually
+      return sb.from("campaigns").select("id").eq("business_id", BIZ.id).then(function (c) {
+        var ids = (c.data || []).map(function (x) { return x.id; });
+        if (!ids.length) return { data: [] };
+        return sb.from("leads").select("*").in("campaign_id", ids);
+      });
+    })
+  ]).then(function (res) {
+    var camps = res[0].data || [], leads = res[1].data || [];
+    var revived = leads.filter(function (l) { return l.status === "replied" || l.status === "booked"; }).length;
+    var booked = leads.filter(function (l) { return l.status === "booked"; }).length;
+    var pipe = leads.filter(function (l) { return l.status === "booked"; })
+      .reduce(function (s, l) { return s + (parseFloat(l.quote_amount) || 0); }, 0);
+    var html = '<div class="kpi-row">' +
+      kpi("Dead leads loaded", leads.length, "") +
+      kpi("Re-engaged", revived, revived ? "good" : "") +
+      kpi("Jobs booked", booked, booked ? "good" : "") +
+      kpi("Pipeline recovered", "$" + pipe.toLocaleString(), pipe ? "good" : "") + "</div>";
+    html += '<div class="panel"><h3>Launch a Revive campaign</h3>' +
+      '<div class="field"><label>Campaign name</label><input id="c-name" placeholder="e.g. Spring quotes follow-up"></div>' +
+      '<div class="field"><label>Upload dead leads (CSV: name, phone, service, quote_date, quote_amount)</label><input id="c-csv" type="file" accept=".csv"></div>' +
+      '<div class="field"><label>Message 1 — sent immediately</label><textarea id="c-m1" rows="2">Hi {{name}}, it\'s ' + esc(BIZ.name) + '! You got a quote from us a while back for {{service}} — still thinking about it? Reply YES and I\'ll get you re-booked this week.</textarea></div>' +
+      '<div class="field"><label>Message 2 — sent day 4</label><textarea id="c-m2" rows="2">Hi {{name}}, quick follow-up from ' + esc(BIZ.name) + ' — we\'ve got a couple openings next week for {{service}}. Want me to hold one for you? Just reply YES.</textarea></div>' +
+      '<div class="field"><label>Message 3 — sent day 10</label><textarea id="c-m3" rows="2">Last call {{name}} — closing out old quotes Friday. If you still want {{service}} done, reply YES and we\'ll make it happen. - ' + esc(BIZ.name) + '</textarea></div>' +
+      '<button class="btn" onclick="launchCampaign()">Upload & launch →</button>' +
+      '<div class="form-note">Every message includes opt-out handling. We only text leads who previously contacted your business.</div></div>';
+    html += '<div class="panel"><h3>Campaigns</h3>';
+    if (!camps.length) html += '<div class="empty">No campaigns yet.</div>';
+    else {
+      html += '<table class="data"><tr><th>Name</th><th>Status</th><th>Leads</th><th>Re-engaged</th><th></th></tr>';
+      camps.forEach(function (c) {
+        var cl = leads.filter(function (l) { return l.campaign_id === c.id; });
+        var cr = cl.filter(function (l) { return l.status === "replied" || l.status === "booked"; }).length;
+        html += "<tr><td>" + esc(c.name) + "</td><td>" + statusPill(c.status) + "</td><td>" + cl.length + "</td><td>" + cr + "</td>" +
+          '<td><button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="viewLeads(\'' + c.id + "')\">leads</button></td></tr>";
+      });
+      html += "</table>";
+    }
+    html += "</div><div id='leads-sub'></div>";
+    document.getElementById("panel").innerHTML = html;
+  });
+}
+
+function parseCSV(text) {
+  var lines = text.trim().split(/\r?\n/);
+  var out = [];
+  for (var i = 1; i < lines.length; i++) {
+    var cols = lines[i].split(",").map(function (c) { return c.trim().replace(/^"|"$/g, ""); });
+    if (cols[1]) out.push({ name: cols[0] || null, phone: cols[1], service: cols[2] || null,
+      quote_date: cols[3] || null, quote_amount: cols[4] ? parseFloat(cols[4]) : null });
+  }
+  return out;
+}
+
+function launchCampaign() {
+  var name = document.getElementById("c-name").value.trim() || "Revive campaign";
+  var file = document.getElementById("c-csv").files[0];
+  if (!file) { alert("Please choose a CSV file first."); return; }
+  var rd = new FileReader();
+  rd.onload = function () {
+    var leads = parseCSV(rd.target.result);
+    if (!leads.length) { alert("No leads found in that CSV."); return; }
+    sb.from("campaigns").insert({
+      business_id: BIZ.id, name: name, status: "active",
+      msg_day0: document.getElementById("c-m1").value,
+      msg_day4: document.getElementById("c-m2").value,
+      msg_day10: document.getElementById("c-m3").value
+    }).select().then(function (r) {
+      var camp = r.data[0];
+      var rows = leads.map(function (l) { l.campaign_id = camp.id; return l; });
+      return sb.from("leads").insert(rows).then(function () {
+        // kick off first messages via the API
+        return fetch("/api/revive-kickoff", { method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ campaign_id: camp.id }) }).then(function () {
+          alert(leads.length + " leads loaded — first texts going out now.");
+          render();
+        });
+      });
+    });
+  };
+  rd.readAsText(file);
+}
+
+function viewLeads(cid) {
+  sb.from("leads").select("*").eq("campaign_id", cid).order("created_at").then(function (r) {
+    var rows = r.data || [];
+    var html = '<div class="panel"><h3>Campaign leads</h3><table class="data"><tr><th>Name</th><th>Phone</th><th>Service</th><th>Quote</th><th>Status</th></tr>';
+    rows.forEach(function (l) {
+      html += "<tr><td>" + esc(l.name || "—") + "</td><td>" + esc(l.phone) + "</td><td>" + esc(l.service || "—") + "</td>" +
+        "<td>" + (l.quote_amount ? "$" + Number(l.quote_amount).toLocaleString() : "—") + "</td><td>" + statusPill(l.status) + "</td></tr>";
+    });
+    document.getElementById("leads-sub").innerHTML = html + "</table></div>";
+  });
+}
+
+function renderInbox() {
+  sb.from("campaigns").select("id").eq("business_id", BIZ.id).then(function (c) {
+    var ids = (c.data || []).map(function (x) { return x.id; });
+    if (!ids.length) { document.getElementById("panel").innerHTML = '<div class="panel"><div class="empty">No conversations yet.</div></div>'; return; }
+    return sb.from("leads").select("id,name,phone").in("campaign_id", ids).then(function (l) {
+      var leadIds = (l.data || []).map(function (x) { return x.id; });
+      var byId = {};
+      (l.data || []).forEach(function (x) { byId[x.id] = x; });
+      if (!leadIds.length) { document.getElementById("panel").innerHTML = '<div class="panel"><div class="empty">No conversations yet.</div></div>'; return; }
+      return sb.from("messages").select("*").in("lead_id", leadIds).order("created_at", { ascending: false }).limit(100).then(function (m) {
+        var msgs = m.data || [];
+        var html = '<div class="panel"><h3>Latest replies</h3>';
+        if (!msgs.length) html += '<div class="empty">No replies yet — they\'ll show up here the moment a lead texts back.</div>';
+        msgs.forEach(function (mm) {
+          var lead = byId[mm.lead_id] || {};
+          html += '<div class="msg ' + mm.direction + '"><b>' + esc(lead.name || lead.phone || "") + "</b><br>" +
+            esc(mm.body) + '<div class="t">' + new Date(mm.created_at).toLocaleString() + "</div></div>";
+        });
+        html += "</div>";
+        document.getElementById("panel").innerHTML = html;
+        var unread = msgs.filter(function (mm) { return mm.direction === "in"; }).length;
+        document.getElementById("inbox-badge").textContent = unread ? "(" + unread + ")" : "";
+      });
+    });
+  });
+}
+</script>
+</body>
+</html>
